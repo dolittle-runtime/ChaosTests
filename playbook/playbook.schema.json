@@ -1,0 +1,134 @@
+{
+    "$id": "https://go.dolittle.io/chaostests",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "title": "Dolittle Runtime chaostest playbook schema",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "actions": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/action" }
+        }
+    },
+    "required": [ "name", "actions" ],
+
+    "definitions": {
+        "action": {
+            "oneOf": [
+                { "$ref": "#/definitions/delay" },
+                { "$ref": "#/definitions/sequence" },
+                { "$ref": "#/definitions/parallel" }
+            ]
+        },
+
+        "delay": {
+            "type": "object",
+            "properties": {
+                "kind": { "const": "delay" },
+                "name": { "type": "string" },
+                "duration": { "type": "number" }
+            },
+            "required": [ "kind", "name", "duration" ],
+            "defaultSnippets": [{
+                "label": "Delay",
+                "description": "A delay",
+                "body": {
+                    "kind": "delay",
+                    "name": "$1",
+                    "duration": "^$2"
+                }
+            }]
+        },
+
+        "sequence": {
+            "type": "object",
+            "properties": {
+                "kind": { "const": "sequence" },
+                "name": { "type": "string" },
+                "actions": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/sequence/definitions/action" }
+                }
+            },
+            "required": [ "kind", "name", "actions" ],
+            "defaultSnippets": [{
+                "label": "Sequence",
+                "description": "A set of actions to perform in sequence",
+                "body": {
+                    "kind": "sequence",
+                    "name": "$1",
+                    "actions": [ "^$2" ]
+                }
+            }],
+
+            "definitions": {
+                "action": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/action" },
+                        { "$ref": "#/definitions/sequence/definitions/stop" }
+                    ]
+                },
+
+                "stop": {
+                    "type": "object",
+                    "properties": {
+                        "kind": { "const": "stop" },
+                        "name": { "type": "string" },
+                        "probability": { "type": "number" }
+                    },
+                    "required": [ "kind", "name", "probability" ],
+                    "defaultSnippets": [{
+                        "label": "Stop",
+                        "description": "A probabilistic stop of the sequence",
+                        "body": {
+                            "kind": "stop",
+                            "name": "$1",
+                            "probability": "^$2"
+                        }
+                    }]
+                }
+            }
+        },
+
+        "parallel": {
+            "type": "object",
+            "properties": {
+                "kind": { "const": "parallel" },
+                "name": { "type": "string" },
+                "actions": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/parallel/definitions/action" }
+                }
+            },
+            "required": [ "kind", "name", "actions" ],
+            "defaultSnippets": [{
+                "label": "Parallel",
+                "description": "A set of actions to perform in parallel",
+                "body": {
+                    "kind": "parallel",
+                    "name": "$1",
+                    "actions": [ "^$2" ]
+                }
+            }],
+
+            "definitions": {
+                "action": {
+                    "allOf": [
+                        { "$ref": "#/definitions/action" },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "waitForCompletion": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [ "waitForCompletion" ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

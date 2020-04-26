@@ -1,0 +1,50 @@
+{
+    "name": "first",
+    "actions": [
+        {
+            "kind": "delay",
+            "name": "first_1",
+            "duration": 2.0
+        },
+        {
+            "kind": "sequence",
+            "name": "second_2",
+            "actions": [
+                {
+                    "kind": "delay",
+                    "name": "second_2_1",
+                    "duration": 1.0
+                },
+                {
+                    "kind": "stop",
+                    "name": "stop_surely",
+                    "probability": 1
+                },
+                {
+                    "kind": "delay",
+                    "name": "second_2_2",
+                    "duration": 2.0
+                },
+                {
+                    "kind": "parallel",
+                    "name": "parallell",
+                    "actions": [
+                        {
+                            "kind": "delay",
+                            "name": "hello",
+                            "duration": 1.0,
+                            "waitForCompletion": true
+                        },
+                        {
+                            "kind": "sequence",
+                            "name": "hello",
+                            "actions": [
+                            ],
+                            "waitForCompletion": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

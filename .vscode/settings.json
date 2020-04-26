@@ -1,0 +1,10 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "*.chaostest.json"
+            ],
+            "url": "file:///Users/jakob/Git/dolittle-runtime/ChaosTests/playbook/playbook.schema.json"
+        }
+    ],
+}
