@@ -2,6 +2,7 @@ package playbook
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"go.dolittle.io/chaostests/scenario"
 )
@@ -17,20 +18,45 @@ type Parallel struct {
 
 // Build appends all Parallel actions to a scenario.Parallel
 func (p *Parallel) Build(parallel *scenario.Parallel) error {
-	for _, message := range p.Actions {
-		extras := parallelExtras{
-			RunToCompletion: true,
+	duplicateAction := func(duplicates int, action func(string) error) error {
+		if duplicates < 2 {
+			return action("")
 		}
+		for n := 0; n < duplicates; n++ {
+			suffix := fmt.Sprintf("[%d]", n)
+			if err := action(suffix); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, message := range p.Actions {
+		extras := struct {
+			RunToCompletion bool `json:"waitForCompletion"`
+			Duplicate       int  `json:"duplicate"`
+		}{true, 0}
+
 		parsed, err := ParallelActions.ParseWithExtras(message, &extras)
 		if err != nil {
 			return err
 		}
+
 		switch action := parsed.(type) {
 		case *Delay:
-			parallel.AppendDelay(action.Name, action.Duration)
+			duplicateAction(extras.Duplicate, func(suffix string) error {
+				parallel.AppendDelay(action.Name+suffix, action.Duration)
+				return nil
+			})
 		case *Sequence:
-			child := parallel.AppendNewSequence(action.Name, extras.RunToCompletion)
-			if err := action.Build(child); err != nil {
+			err := duplicateAction(extras.Duplicate, func(suffix string) error {
+				child := parallel.AppendNewSequence(action.Name+suffix, extras.RunToCompletion)
+				if err := action.Build(child); err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
 				return err
 			}
 		default:
@@ -38,10 +64,6 @@ func (p *Parallel) Build(parallel *scenario.Parallel) error {
 		}
 	}
 	return nil
-}
-
-type parallelExtras struct {
-	RunToCompletion bool `json:"waitForCompletion"`
 }
 
 // ParallelParsable returns a Parsable for Parallel

@@ -64,10 +64,22 @@
 
             "definitions": {
                 "action": {
-                    "oneOf": [
-                        { "$ref": "#/definitions/action" },
-                        { "$ref": "#/definitions/sequence/definitions/stop" },
-                        { "$ref": "#/definitions/parallel" }
+                    "allOf": [
+                        {
+                            "oneOf": [
+                                { "$ref": "#/definitions/action" },
+                                { "$ref": "#/definitions/sequence/definitions/stop" },
+                                { "$ref": "#/definitions/parallel" }
+                            ]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "repeat": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
                     ]
                 },
 
@@ -122,6 +134,9 @@
                             "properties": {
                                 "waitForCompletion": {
                                     "type": "boolean"
+                                },
+                                "duplicate": {
+                                    "type": "integer"
                                 }
                             },
                             "required": [ "waitForCompletion" ]

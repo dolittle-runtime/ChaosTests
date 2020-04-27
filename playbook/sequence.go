@@ -2,6 +2,7 @@ package playbook
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"go.dolittle.io/chaostests/scenario"
 )
@@ -21,24 +22,59 @@ type Sequence struct {
 
 // Build appends all Sequence actions to a scenario.Sequence
 func (s *Sequence) Build(sequence *scenario.Sequence) error {
+	repeatAction := func(repeat int, action func(string) error) error {
+		if repeat < 2 {
+			return action("")
+		}
+		for n := 0; n < repeat; n++ {
+			suffix := fmt.Sprintf("[%d]", n)
+			if err := action(suffix); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
 	for _, message := range s.Actions {
-		parsed, err := SequenceActions.Parse(message)
+		extras := struct {
+			Repeat int `json:"repeat"`
+		}{0}
+
+		parsed, err := SequenceActions.ParseWithExtras(message, &extras)
 		if err != nil {
 			return err
 		}
 		switch action := parsed.(type) {
 		case *Delay:
-			sequence.AppendDelay(action.Name, action.Duration)
+			repeatAction(extras.Repeat, func(suffix string) error {
+				sequence.AppendDelay(action.Name+suffix, action.Duration)
+				return nil
+			})
 		case *Stop:
-			sequence.AppendStop(action.Name, action.Probability)
+			repeatAction(extras.Repeat, func(suffix string) error {
+				sequence.AppendStop(action.Name+suffix, action.Probability)
+				return nil
+			})
 		case *Sequence:
-			child := sequence.AppendNewSequence(action.Name)
-			if err := action.Build(child); err != nil {
+			err := repeatAction(extras.Repeat, func(suffix string) error {
+				child := sequence.AppendNewSequence(action.Name)
+				if err := action.Build(child); err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
 				return err
 			}
 		case *Parallel:
-			child := sequence.AppendNewParallel(action.Name)
-			if err := action.Build(child); err != nil {
+			err := repeatAction(extras.Repeat, func(suffix string) error {
+				child := sequence.AppendNewParallel(action.Name)
+				if err := action.Build(child); err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
 				return err
 			}
 		default:

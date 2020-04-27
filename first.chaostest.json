@@ -4,7 +4,8 @@
         {
             "kind": "delay",
             "name": "first_1",
-            "duration": 2.0
+            "duration": 0.5,
+            "repeat": 3
         },
         {
             "kind": "sequence",
@@ -45,7 +46,8 @@
                                     "duration": 10
                                 }
                             ],
-                            "waitForCompletion": false
+                            "waitForCompletion": false,
+                            "duplicate": 2
                         }
                     ]
                 }

@@ -40,7 +40,7 @@ func (c *Collector) process() {
 	for message := range c.results {
 		switch result := message.(type) {
 		case logResult:
-			fmt.Printf("%s [%s] (%s) %s\n", result.timestamp.Format(time.StampMilli), result.name, result.kind, result.message)
+			fmt.Printf("%s (%s) (%s) %s\n", result.timestamp.Format(time.StampMilli), result.name, result.kind, result.message)
 		}
 	}
 	close(c.done)
