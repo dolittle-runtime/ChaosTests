@@ -18,7 +18,7 @@
                 {
                     "kind": "stop",
                     "name": "stop_surely",
-                    "probability": 1
+                    "probability": 0
                 },
                 {
                     "kind": "delay",
@@ -39,6 +39,11 @@
                             "kind": "sequence",
                             "name": "hello",
                             "actions": [
+                                {
+                                    "kind": "delay",
+                                    "name": "slow",
+                                    "duration": 10
+                                }
                             ],
                             "waitForCompletion": false
                         }

@@ -2,23 +2,25 @@ package main
 
 import (
 	"context"
-	"time"
+	"fmt"
+
+	"go.dolittle.io/chaostests/playbook"
 
 	"go.dolittle.io/chaostests/results"
-	"go.dolittle.io/chaostests/scenario"
 )
 
 func main() {
 	col := results.NewCollector()
 	ctx := context.Background()
-	wr := col.NewWriterForScenario("test")
+	sc, err := playbook.ParseScenarioFromFile("first.chaostest.json")
+	if err != nil {
+		fmt.Println("Error parsing scenario:", err)
+		return
+	}
+	wr := col.NewWriterForScenario(sc.Name())
+	if err := sc.Perform(ctx, wr); err != nil {
+		fmt.Println("Error performing scenario:", err)
+	}
 
-	sc := scenario.NewScenario("test")
-	sc.AppendDelay("delay_1", 2*time.Second)
-	par := sc.AppendNewParallel("parallel_1")
-	par.AppendDelay("delay_2_1", 5*time.Second)
-	par.AppendDelay("delay_2_2", 1*time.Second)
-
-	sc.Perform(ctx, wr)
 	col.Flush()
 }
