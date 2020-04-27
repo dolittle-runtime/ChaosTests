@@ -9,7 +9,7 @@
         },
         "actions": {
             "type": "array",
-            "items": { "$ref": "#/definitions/action" }
+            "items": { "$ref": "#/definitions/sequence/definitions/action" }
         }
     },
     "required": [ "name", "actions" ],
@@ -18,8 +18,7 @@
         "action": {
             "oneOf": [
                 { "$ref": "#/definitions/delay" },
-                { "$ref": "#/definitions/sequence" },
-                { "$ref": "#/definitions/parallel" }
+                { "$ref": "#/definitions/sequence" }
             ]
         },
 
@@ -67,7 +66,8 @@
                 "action": {
                     "oneOf": [
                         { "$ref": "#/definitions/action" },
-                        { "$ref": "#/definitions/sequence/definitions/stop" }
+                        { "$ref": "#/definitions/sequence/definitions/stop" },
+                        { "$ref": "#/definitions/parallel" }
                     ]
                 },
 
